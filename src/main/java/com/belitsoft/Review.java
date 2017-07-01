@@ -6,14 +6,10 @@ public class Review {
     private String userId;
     private String text;
 
-    public Review(String id, String productId, String userId) {
+    public Review(String id, String productId, String userId, String text) {
         this.id = id;
         this.productId = productId;
         this.userId = userId;
-    }
-
-    public Review(String id, String text) {
-        this.id = id;
         this.text = text;
     }
 
@@ -27,10 +23,6 @@ public class Review {
 
     public String getText() {
         return text;
-    }
-
-    public int getCount() {
-        return 1;
     }
 
     @Override
