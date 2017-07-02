@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -14,10 +16,10 @@ public class AmazonApplication {
 
     public static void main(String[] args) {
         String fileName = "Reviews.csv";
-        //List<Review> reviewsList = getArrayFromCSV(fileName, false);
-        Map<String, Integer> allWords = new ConcurrentHashMap<>();
-        Map<String, Integer> countProducts = new ConcurrentHashMap<>();
-        Map<String, Integer> countUsers = new ConcurrentHashMap<>();
+        Map<String, Integer> allWords = new HashMap<>();
+        Map<String, Integer> countProducts = new HashMap<>();
+        Map<String, Integer> countUsers = new HashMap<>();
+        Set<String> onlyText = new HashSet<>();
         int countSkip = 1;
         List<Review> reviews = getArrayReviews(fileName, countSkip);
         while (reviews != null) {
@@ -36,6 +38,7 @@ public class AmazonApplication {
                         allWords.put(str, allWords.getOrDefault(str, 0) + 1);
                     }
                 }
+                onlyText.add(review.getText());
             }
 
             countSkip+=10000;
@@ -55,6 +58,15 @@ public class AmazonApplication {
         System.out.println("-----------------------------------------------------");
         System.out.println("1000 most used words in the reviews:");
         printMap(allWordsSorted);
+
+        allWords = null;
+        countProducts = null;
+        countUsers = null;
+        countProductsSorted = null;
+        countUsersSorted = null;
+        allWordsSorted = null;
+
+        translateReviews(onlyText);
     }
 
     private static Map<String, Integer> getSortedMap(Map<String, Integer> map) {
@@ -88,5 +100,21 @@ public class AmazonApplication {
             ioe.printStackTrace();
         }
         return reviewsList;
+    }
+
+    private static void translateReviews(Set<String> reviews) {
+        ExecutorService service = Executors.newFixedThreadPool(100);
+        AtomicInteger count = new AtomicInteger(0);
+
+        for(String review : reviews)
+        {
+            count.incrementAndGet();
+            Runnable translator = new TranslateReviewThread("en", "fr", count.toString());
+            service.execute(translator);
+        }
+        service.shutdown();
+        while (!service.isTerminated()) {
+        }
+        System.out.println("Finished all threads");
     }
 }
