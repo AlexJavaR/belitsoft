@@ -20,6 +20,7 @@ public class AmazonApplication {
         Map<String, Integer> countProducts = new HashMap<>();
         Map<String, Integer> countUsers = new HashMap<>();
         Set<String> onlyText = new HashSet<>();
+        boolean translate = true;
         int countSkip = 1;
         List<Review> reviews = getArrayReviews(fileName, countSkip);
         while (reviews != null) {
@@ -66,7 +67,10 @@ public class AmazonApplication {
         countUsersSorted = null;
         allWordsSorted = null;
 
-        translateReviews(onlyText);
+        //Start 100 Threads for translating reviews
+        if (translate) {
+            translateReviews(onlyText);
+        }
     }
 
     private static Map<String, Integer> getSortedMap(Map<String, Integer> map) {
